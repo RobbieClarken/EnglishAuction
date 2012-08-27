@@ -25,7 +25,7 @@ db.connect(function(err) {
     console.log('MySQL connection established.');
 
     db.query('SELECT * FROM sessions ORDER BY sessionID DESC LIMIT 1', function(err, result) {
-      if(err) { 
+      if(err) {
         console.log('Error loading last session.', err);
       } else {
         if(result.length) {
@@ -41,7 +41,7 @@ db.connect(function(err) {
     });
 
   } else {
-    console.log(err);          
+    console.log(err);
   }
 });
 
