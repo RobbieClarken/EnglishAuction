@@ -6,6 +6,22 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <% if(startTime) { %>
+    <p>Experiment started: <%= startTime %></p>
+    <p>Subjects: <%= subjectCount %></p>
+    <% } else { %>
+    <p>No experiment running.</p>
+    <% } %>
+    <form action="/session/new" method="PUSH">
+      <table>
+        <tr>
+          <td>Subjects per auction</td><td><input type="input" name="subjectsPerAuction" value="<%= subjectsPerAuction %>" /></td>
+        </tr>
+        <tr>
+          <td>Auction increment</td><td><input type="input" name="increment" value="<%= increment %>" /></td>
+        </tr>
+      </table>
+      <input type="submit" value="Start New Experiment" />
+    </form>
   </body>
 </html>

@@ -8,5 +8,12 @@ exports.index = function(req, res){
 };
 
 exports.admin = function(req, res){
-  res.render('admin', { title: 'English Auction Admin' });
+  var data = {
+    title: 'English Auction Admin',
+    startTime: new Date(),
+    subjectCount: 0,
+    subjectsPerAuction: 999,
+    increment: 666 
+  };
+  res.render('admin', data);
 };
