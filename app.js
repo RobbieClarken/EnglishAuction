@@ -5,6 +5,13 @@ var express = require('express')
   , io  = require('socket.io')
   , mysql = require('mysql');
 
+/* Globals */
+var SESSION_ID
+  , START_TIME
+  , INCREMENT
+  , GROUP_SIZE
+  , ENDED;
+
 var db = mysql.createConnection({
   host: 'monlee.monash.edu',
   user: 'anmolratan',
@@ -16,6 +23,23 @@ var db = mysql.createConnection({
 db.connect(function(err) {
   if(!err) {
     console.log('MySQL connection established.');
+
+    db.query('SELECT * FROM sessions ORDER BY sessionID DESC LIMIT 1', function(err, result) {
+      if(err) { 
+        console.log('Error loading last session.', err);
+      } else {
+        if(result.length) {
+          var row = result[0];
+          SESSION_ID = row.sessionID;
+          START_TIME = row.startTime;
+          INCREMENT = row.increment;
+          GROUP_SIZE = row.groupSize;
+          ENDED = row.ended;
+        }
+        console.log(SESSION_ID, START_TIME, INCREMENT, GROUP_SIZE, ENDED);
+      }
+    });
+
   } else {
     console.log(err);          
   }
@@ -45,14 +69,19 @@ app.get('/', routes.index);
 app.get('/admin', routes.admin);
 app.get('/session/new', function(req, res) {
   var fields = req.query;
-  fields.startTime = new Date();
   var query = db.query('INSERT INTO sessions SET ?', fields, function(err, result) {
-    console.log('Query complete.');
-    console.log(err);
-    console.log(result);
+    if(err) {
+      console.log('Error adding new session', err, fields);
+    } else {
+      console.log('Added new session.');
+      SESSION_ID = result.insertId;
+      INCREMENT = fields.increment;
+      GROUP_SIZE = fields.groupSize;
+      ENDED = false;
+    }
+    console.log(SESSION_ID, START_TIME, INCREMENT, GROUP_SIZE, ENDED);
   });
   routes.admin(req, res);
-  console.log(query.sql);
 });
 
 http.createServer(app).listen(app.get('port'), function(){
