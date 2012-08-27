@@ -9,7 +9,8 @@
   "dependencies": {
     "express": "3.0.0rc3",
     "ejs": "*",
-    "socket.io": "~0.9.10"
+    "socket.io": "~0.9.10",
+    "mysql": "~2.0.0-alpha3"
   },
   "devDependencies": {
     "nodemon": "~0.6.23"
