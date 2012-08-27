@@ -8,7 +8,8 @@
   "main": "./app.js",
   "dependencies": {
     "express": "3.0.0rc3",
-    "ejs": "*"
+    "ejs": "*",
+    "socket.io": "~0.9.10"
   },
   "devDependencies": {
     "nodemon": "~0.6.23"
