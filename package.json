@@ -5,8 +5,12 @@
   "scripts": {
     "start": "node app"
   },
+  "main": "./app.js",
   "dependencies": {
     "express": "3.0.0rc3",
     "ejs": "*"
+  },
+  "devDependencies": {
+    "nodemon": "~0.6.23"
   }
 }
