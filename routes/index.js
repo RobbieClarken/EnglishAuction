@@ -1,9 +1,15 @@
 exports.index = function(req, res){
-  res.render('index', { title: 'English Auction' });
+  res.render('auction', {
+    page: 'auction',
+    title: 'Experiment',
+    objectName: 'Chocolate Bar',
+    price: 0
+  });
 };
 
 exports.admin = function(req, res){
   var data = {
+    layout: false,
     title: 'English Auction Admin',
     startTime: new Date(),
     subjectCount: 0,

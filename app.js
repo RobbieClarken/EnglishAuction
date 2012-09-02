@@ -1,4 +1,5 @@
 var express = require('express')
+  , partials = require('express3-partials')
   , routes = require('./routes')
   , http = require('http')
   , path = require('path')
@@ -46,6 +47,8 @@ db.connect(function(err) {
 });
 
 var app = express();
+
+app.use(partials());
 
 app.configure(function(){
   app.set('port', process.env.PORT || 3000);
