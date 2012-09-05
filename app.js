@@ -4,14 +4,21 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , io  = require('socket.io')
-  , mysql = require('mysql');
+  , mysql = require('mysql')
+  , auctionHouse = require('./lib/auctionhouse');
 
-/* Globals */
-var SESSION_ID
-  , START_TIME
-  , INCREMENT
-  , GROUP_SIZE
-  , ENDED;
+var settings = {}
+  , auctions = {};
+
+function newAuction() {
+  var options = {
+    id: JSON.stringify(new Date()),
+    increment: settings.increment,
+    groupSize: settings.groupSize
+  };
+  auctions[id] = new auctionHouse.Auction(options);
+  return auctions[id];
+}
 
 var db = mysql.createConnection({
   host: 'monlee.monash.edu',
@@ -31,16 +38,14 @@ db.connect(function(err) {
       } else {
         if(result.length) {
           var row = result[0];
-          SESSION_ID = row.sessionID;
-          START_TIME = row.startTime;
-          INCREMENT = row.increment;
-          GROUP_SIZE = row.groupSize;
-          ENDED = row.ended;
+          settings.sessionID = row.sessionID;
+          settings.startTime = row.startTime;
+          settings.increment = row.increment;
+          settings.groupSize = row.groupSize;
         }
-        console.log(SESSION_ID, START_TIME, INCREMENT, GROUP_SIZE, ENDED);
+        console.log(JSON.stringify(settings));
       }
     });
-
   } else {
     console.log(err);
   }
@@ -69,22 +74,30 @@ app.configure('development', function(){
 });
 
 app.get('/', routes.index);
+app.get('/login', routes.login);
 app.get('/admin', routes.admin);
-app.get('/session/new', function(req, res) {
-  var fields = req.query;
+app.post('/session', function(req, res) {
+  var fields = req.body;
   var query = db.query('INSERT INTO sessions SET ?', fields, function(err, result) {
     if(err) {
       console.log('Error adding new session', err, fields);
     } else {
       console.log('Added new session.');
-      SESSION_ID = result.insertId;
-      INCREMENT = fields.increment;
-      GROUP_SIZE = fields.groupSize;
-      ENDED = false;
+      settings.sessionID = result.insertId;
+      settings.increment = fields.increment;
+      settings.groupSize = fields.groupSize;
     }
-    console.log(SESSION_ID, START_TIME, INCREMENT, GROUP_SIZE, ENDED);
+    console.log(JSON.stringify(settings));
   });
   routes.admin(req, res);
+});
+
+app.post('/login', function(req, res) {
+  if(!req.body.id) {
+    routes.login(req, res, { failedLogin: true } );
+  }
+
+  routes.login(req, res, { failedLogin: true } );
 });
 
 http.createServer(app).listen(app.get('port'), function(){

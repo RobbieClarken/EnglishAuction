@@ -12,7 +12,7 @@
     <% } else { %>
     <p>No experiment running.</p>
     <% } %>
-    <form action="/session/new" method="PUSH">
+    <form action="/session" method="POST">
       <table>
         <tr>
           <td>Subjects per auction</td><td><input type="input" name="groupSize" value="<%= groupSize %>" /></td>
