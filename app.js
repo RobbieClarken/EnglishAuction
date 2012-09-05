@@ -21,7 +21,8 @@ function newAuction() {
 }
 
 var db = mysql.createConnection({
-  host: 'monlee.monash.edu',
+  /*host: 'monlee.monash.edu',*/
+  host: 'elab.me',
   user: 'anmolratan',
   password: 'monashecon',
   database: 'english_auction',
@@ -43,11 +44,11 @@ db.connect(function(err) {
           settings.increment = row.increment;
           settings.groupSize = row.groupSize;
         }
-        console.log(JSON.stringify(settings));
       }
     });
   } else {
-    console.log(err);
+    console.log('MySQL error!', err);
+    process.exit(1);
   }
 });
 
