@@ -4,10 +4,10 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , io  = require('socket.io')
-  , mysql = require('mysql')
+  , db = require('./lib/db')
   , auctionHouse = require('./lib/auctionhouse');
 
-var settings = {}
+var settings = db.settings
   , auctions = {};
 
 function newAuction() {
@@ -19,38 +19,6 @@ function newAuction() {
   auctions[id] = new auctionHouse.Auction(options);
   return auctions[id];
 }
-
-var db = mysql.createConnection({
-  /*host: 'monlee.monash.edu',*/
-  host: 'elab.me',
-  user: 'anmolratan',
-  password: 'monashecon',
-  database: 'english_auction',
-  insecureAuth: true
-});
-
-db.connect(function(err) {
-  if(!err) {
-    console.log('MySQL connection established.');
-
-    db.query('SELECT * FROM sessions ORDER BY sessionID DESC LIMIT 1', function(err, result) {
-      if(err) {
-        console.log('Error loading last session.', err);
-      } else {
-        if(result.length) {
-          var row = result[0];
-          settings.sessionID = row.sessionID;
-          settings.startTime = row.startTime;
-          settings.increment = row.increment;
-          settings.groupSize = row.groupSize;
-        }
-      }
-    });
-  } else {
-    console.log('MySQL error!', err);
-    process.exit(1);
-  }
-});
 
 var app = express();
 
@@ -76,28 +44,19 @@ app.configure('development', function(){
 
 app.get('/', routes.index);
 app.get('/login', routes.login);
-app.get('/admin', routes.admin);
+app.get('/admin', function(req, res) { routes.admin(req, res, settings) });
 app.post('/session', function(req, res) {
   var fields = req.body;
-  var query = db.query('INSERT INTO sessions SET ?', fields, function(err, result) {
-    if(err) {
-      console.log('Error adding new session', err, fields);
-    } else {
-      console.log('Added new session.');
-      settings.sessionID = result.insertId;
-      settings.increment = fields.increment;
-      settings.groupSize = fields.groupSize;
-    }
-    console.log(JSON.stringify(settings));
+  db.updateSettings(fields, function(err) {
+    // TODO: Handle error
+    routes.admin(req, res, settings);
   });
-  routes.admin(req, res);
 });
 
 app.post('/login', function(req, res) {
   if(!req.body.id) {
     routes.login(req, res, { failedLogin: true } );
   }
-
   routes.login(req, res, { failedLogin: true } );
 });
 
