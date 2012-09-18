@@ -1,10 +1,16 @@
+var pages = [
+  'wait',
+  'auction'
+];
+
 exports.index = function(req, res){
-    var page = 'auction';
+    var page = pages[req.subject.pageIndex];
+    var price = req.auction ? req.auction.price : null;
     res.render(page, {
       page: 'auction',
       title: 'Experiment',
       objectName: 'Chocolate Bar',
-      price: 0
+      price: price
     });
 };
 

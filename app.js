@@ -44,16 +44,22 @@ app.configure('development', function(){
 
 app.get('/', function(req, res) {
   var subjectID = req.cookies.subjectID;
-  if(subjectID) {
-    var subject = auctionHouse.subjects[subjectID];
+  if(!subjectID) {
+    return res.redirect('/login');
+  }
+  console.log(subjectID);
+  auctionHouse.Subject.findOne({_id: subjectID}, function(err, subject) {
     if(!subject) {
+      console.log('Error. Maybe...', err);
       return res.redirect('/login');
     }
-
-    routes.index(req, res);
-  } else {
-    res.redirect('/login');
-  }
+    req.subject = subject;
+    var auctionID = subject.auctionID;
+    auctionHouse.Auction.findOne({'_id': auctionID}, function(err, auction) {
+      req.auction = auction;
+      routes.index(req, res);
+    });
+  });
 });
 app.get('/login', routes.login);
 app.get('/admin', routes.admin);
