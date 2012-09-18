@@ -11,7 +11,8 @@
     "ejs": "*",
     "socket.io": "~0.9.10",
     "mysql": "~2.0.0-alpha3",
-    "express3-partials": "~0.3.3"
+    "express3-partials": "~0.3.3",
+    "mongoose": "~3.1.2"
   },
   "devDependencies": {
     "nodemon": "~0.6.23",

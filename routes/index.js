@@ -1,32 +1,28 @@
 exports.index = function(req, res){
-  if(req.session.id) {
     var page = 'auction';
-
     res.render(page, {
       page: 'auction',
       title: 'Experiment',
       objectName: 'Chocolate Bar',
       price: 0
     });
-  } else {
-    exports.login(req, res);
-  }
 };
 
-exports.login = function(req, res, data){
-  var failedLogin = false;
-  if(data) {
-    failedLogin = data.failedLogin ? true : false;
-  }
+exports.login = function(req, res){
+  console.log('failed:',req.failedLogin);
+  var failedLogin = req.failedLogin || false;
   res.render('login', {title: 'Experiment', failedLogin: failedLogin});
 };
 
-exports.admin = function(req, res, settings){
+exports.admin = function(req, res){
+  console.log(req.settings);
+  console.log(req.info);
+  var settings = req.settings;
   var data = {
     layout: false,
     title: 'English Auction Admin',
     startTime: null,
-    subjectCount: settings.subjectCount,
+    subjectCount: req.info.subjectCount,
     groupSize: settings.groupSize,
     increment: settings.increment 
   };
