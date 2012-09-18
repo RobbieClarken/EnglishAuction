@@ -9,7 +9,6 @@ exports.index = function(req, res){
 };
 
 exports.login = function(req, res){
-  console.log('failed:',req.failedLogin);
   var failedLogin = req.failedLogin || false;
   res.render('login', {title: 'Experiment', failedLogin: failedLogin});
 };
@@ -24,7 +23,8 @@ exports.admin = function(req, res){
     startTime: null,
     subjectCount: req.info.subjectCount,
     groupSize: settings.groupSize,
-    increment: settings.increment 
+    increment: settings.increment,
+    showupFee: settings.showupFee
   };
   res.render('admin', data);
 };
