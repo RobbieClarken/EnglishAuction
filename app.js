@@ -45,18 +45,23 @@ app.get('/', function(req, res) {
   }
   auctionHouse.Subject.findOne({_id: subjectID}, function(err, subject) {
     if(!subject) {
-      console.log('Error. Maybe...', err);
       return res.redirect('/login');
     }
     req.subject = subject;
     var auctionID = subject.auctionID;
     // If already assigned to an auction, skip the wait page
-    if(auctionID && routes.pages[subject.pageIndex] === 'wait') {
+    var page = routes.pages[subject.pageIndex];
+    if(auctionID && page === 'wait') {
+      subject.pageIndex += 1;
+      subject.save();
+    }
+    if(subject.droppedOut && page === 'auction') {
       subject.pageIndex += 1;
       subject.save();
     }
     auctionHouse.Auction.findOne({'_id': auctionID}, function(err, auction) {
       req.auction = auction;
+      res.cookie('auctionID', auctionID, { maxAge: 36000000, httpOnly: true });
       routes.index(req, res);
     });
   });
@@ -85,6 +90,16 @@ app.post('/login', function(req, res) {
     res.redirect('/');
   });
 });
+
+function joinAuction(client, auctionID) {
+  client.join(auctionID);
+  client.get('subjectID', function(err, subjectID) {
+    auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {auctionID: auctionID}, function(err) {
+      client.emit('start auction');
+    });
+  });
+}
+
 app.post('/session', function(req, res) {
   if(req.body.action === 'start') {
     var clients = subjects.clients();
@@ -95,17 +110,13 @@ app.post('/session', function(req, res) {
     for(var auctionNumber = 0; auctionNumber < numberOfAuctions; auctionNumber += 1) {
       var auction = new auctionHouse.Auction({
         increment: req.settings.increment,
-        groupSize: req.settings.groupSize        
+        groupSize: req.settings.groupSize
       });
       var group = groups[auctionNumber];
       auction.save();
       for(var key in group) {
         var client = clients[group[key]];
-        client.get('subjectID', function(err, subjectID) {
-          auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {auctionID: auction.id}, function(err) {
-            console.log('Updated:', subjectID, err);
-          });
-        });
+        joinAuction(client, auction.id);
       }
     }
     req.settings.groupsAssigned = true;
@@ -121,13 +132,35 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 var sio = io.listen(server);
 sio.set('log level', 2); // no debug messages
 
+function updateDropouts(auctionID, callback) {
+  auctionHouse.Subject.update(
+    {auctionID: auctionID, roundChoice: 'drop out'},
+    {droppedOut: true, roundChoice: null},
+    {multi: true},
+    callback
+  );
+}
+
+function updateStayIns(auctionID, price, callback) {
+  auctionHouse.Subject.update(
+    {auctionID: auctionID, roundChoice: 'stay in'},
+    {price: price, roundChoice: null},
+    {multi: true},
+    callback
+  );
+}
+
 var subjects = sio.of('/subjects').on('connection', function (socket) {
-  console.log('Subject joined');
+  var subjectID
+    , auctionID;
   cookieParser(socket.handshake, {}, function() {
-    var subjectID = socket.handshake.cookies.subjectID;
+    subjectID = socket.handshake.cookies.subjectID;
     if(subjectID) {
       socket.set('subjectID', subjectID);
     }
+    auctionID = socket.handshake.cookies.auctionID || null;
+    socket.set('auctionID', auctionID);
+    socket.join(auctionID);
     observers.emit('subject', { subjectCount: subjects.clients().length });
   });
   socket.on('disconnect', function () {
@@ -135,7 +168,69 @@ var subjects = sio.of('/subjects').on('connection', function (socket) {
     // subject that is disconnected is still in clients at this stage
     observers.emit('subject', { subjectCount: subjects.clients().length-1 });
   });
+  socket.on('decision', function(data) {
+    socket.get('auctionID', function(err, auctionID) {
+      auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {roundChoice: data.choice}, function(err) {
+        console.log('Decision saved:', err, auctionID);
+        auctionHouse.Subject.findOne({auctionID: auctionID, roundChoice: null, droppedOut: false}, function(err, result) {
+          if(!result) {
+            // Everyone has decided
+            auctionHouse.Subject.find({auctionID: auctionID, roundChoice: 'stay in', droppedOut: false}, function(err, results) {
+              if(results.length === 0) {
+                // All bidders dropped out at the same price
+                auctionHouse.Subject.find({auctionID: auctionID, roundChoice: 'drop out', droppedOut: false}, function(err, results) {
+                  var winnerIndex = Math.floor(Math.random()*results.length);
+                  endAuction(auctionID, results[winnerIndex], null);
+                });
+              } else if(results.length === 1) {
+                auctionHouse.Auction.findOne({_id: auctionID}, function(err, auction) {
+                  endAuction(auctionID, results[0], auction.price);
+                });
+              } else {
+                bumpPrice(auctionID);
+              }
+            });
+          }
+        });
+      });
+    });
+  });
 });
+
+function endAuction(auctionID, winner, price) {
+  // If we don't need to update subject's price then price argument should be null
+  if(price) {
+    winner.price = price;
+  }
+  winner.won = true;
+  console.log(winner);
+  winner.save(function(err) {
+    auctionHouse.Subject.find({auctionID: auctionID, droppedOut: false}, function(err, results) {
+      for(subjectIndex in results) {
+        var subject = results[subjectIndex];
+        subject.pageIndex += 1;
+        subject.save();
+      }
+      subjects.in(auctionID).emit('over');
+    });
+  });
+}
+
+function bumpPrice(auctionID) {
+  auctionHouse.Auction.findOne({_id: auctionID}, function(err, auction) {
+    var lastPrice = auction.price;
+    auction.price += auction.increment;
+    auction.save(function(err) {
+      updateDropouts(auctionID, function(err) {
+        if(err) { console.log('Error updating drop outs', err, auctionID); }
+        updateStayIns(auctionID, lastPrice, function(err){
+          if(err) { console.log('Error updating stay ins', err, auctionID); }
+          subjects.in(auctionID).emit('price', auction.price);
+        });
+      });
+    });
+  });
+}
 
 var observers = sio.of('/observers').on('connection', function(socket) {
 });

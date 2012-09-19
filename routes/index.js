@@ -1,6 +1,7 @@
 var pages = [
-  //'wait',
-  'auction'
+  'wait',
+  'auction',
+  'over'
 ];
 
 exports.pages = pages;
@@ -12,7 +13,10 @@ exports.index = function(req, res){
       page: 'auction',
       title: 'Experiment',
       objectName: 'Chocolate Bar',
-      price: price
+      price: price,
+      subjectPrice: req.subject.price,
+      roundChoice: req.subject.roundChoice,
+      won: req.subject.won
     });
 };
 

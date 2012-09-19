@@ -3,20 +3,39 @@
   <p>
     The current price of the <%= objectName %> is:
   </p>
-  <h1 style="text-align: center;"><span class='price'><%= price %></span> Rupees</h1>
+  <h1 style="text-align: center;"><span id='price'><%= price %></span> Rupees</h1>
 </div>
-<div id="bid-div">
+<div id="bid-div"<% if(roundChoice) { %> style="display:none;" <% } %> >
   <p>
     What do you want to do?</p>
   <p><input id="stayIn" type="button" value="I am willing to buy at this price. Therefore, I am in the auction." /></p>
   <p>or</p>
   <p><input id="dropOut" type="button" value="I am not willing to buy at this price. Therefore, I am out of the auction." /></p>
 </div>
-<div id="wait-div">Please wait for the other participants.</div>
+<div id="wait-div" <% if(!roundChoice) { %> style="display:none;" <% } %> >Please wait for the other participants.</div>
 
 <script>
   var socket = io.connect('http://localhost/subjects');
   socket.on('price', function(price) {
-    $('.price').html(price);
+    document.location = '/';
+  });
+  socket.on('over', function(price) {
+    document.location = '/';
+  });
+
+  function decision(choice) {
+    $('#bid-div').hide();
+    $('#wait-div').show();
+    var price = parseInt($('#price').html());
+    socket.emit('decision', {choice: choice, price: price} );
+  }
+
+  $(document).ready(function() {
+    $('#stayIn').click(function() {
+      decision('stay in');
+    });
+    $('#dropOut').click(function() {
+      decision('drop out');
+    });
   });
 </script>
