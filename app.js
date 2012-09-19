@@ -5,7 +5,9 @@ var express = require('express')
   , http = require('http')
   , path = require('path')
   , io = require('socket.io')
-  , cookieParser = express.cookieParser('fun30fllkslfj24fdsakj');
+  , cookieParser = express.cookieParser('fun30fllkslfj24fdsakj')
+  , helpers = require('./lib/helpers');
+
 var app = express();
 
 app.use(partials());
@@ -27,12 +29,6 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(cookieParser);
   app.use(express.session());
-  app.use(function(req, res, next) {
-    if(req.url === '/') {
-
-    }
-    next();
-  });
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });
@@ -89,7 +85,11 @@ app.post('/login', function(req, res) {
 });
 app.post('/session', function(req, res) {
   if(req.body.action === 'start') {
-
+    var clients = sio.sockets.clients();
+    var clientCount = clients.length;
+    var settings = auctionHouse.getSettings();
+    var groupSize = settings.groupSize;
+    var groups = helpers.permute(helpers.arrayOfGroups(clientCount, groupSize));
   }
   res.redirect('/admin');
 });
@@ -99,7 +99,7 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 });
 
 var sio = io.listen(server);
-sio.set('log level', 2);
+sio.set('log level', 2); // no debug messages
 /*
 sio.set('authorization', function (data, accept) {
   if(data.headers.cookie) {
