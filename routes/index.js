@@ -1,7 +1,9 @@
 var pages = [
-  'wait',
+  //'wait',
   'auction'
 ];
+
+exports.pages = pages;
 
 exports.index = function(req, res){
     var page = pages[req.subject.pageIndex];

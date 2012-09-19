@@ -4,8 +4,8 @@ var express = require('express')
   , auctionHouse = require('./lib/auctionHouse')
   , http = require('http')
   , path = require('path')
-  , io = require('socket.io');
-
+  , io = require('socket.io')
+  , cookieParser = express.cookieParser('fun30fllkslfj24fdsakj');
 var app = express();
 
 app.use(partials());
@@ -25,7 +25,7 @@ app.configure(function(){
   app.use(express.logger('dev'));
   app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.cookieParser('fun30fllkslfj24fdsakj'));
+  app.use(cookieParser);
   app.use(express.session());
   app.use(function(req, res, next) {
     if(req.url === '/') {
@@ -55,6 +55,11 @@ app.get('/', function(req, res) {
     }
     req.subject = subject;
     var auctionID = subject.auctionID;
+    // If already assigned to an auction, skip the wait page
+    if(auctionID && routes.pages[subject.pageIndex] === 'wait') {
+      subject.pageIndex += 1;  
+      subject.save();
+    }
     auctionHouse.Auction.findOne({'_id': auctionID}, function(err, auction) {
       req.auction = auction;
       routes.index(req, res);
@@ -70,7 +75,6 @@ app.post('/settings', function(req, res) {
     res.redirect('/admin');
   });
 });
-
 app.post('/login', function(req, res) {
   if(req.body.id === 'abc') {
     auctionHouse.newSubject(function(err, subjectID) {
@@ -83,6 +87,12 @@ app.post('/login', function(req, res) {
     routes.login(req, res);
   }
 });
+app.post('/session', function(req, res) {
+  if(req.body.action === 'start') {
+
+  }
+  res.redirect('/admin');
+});
 
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
@@ -90,10 +100,37 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 
 var sio = io.listen(server);
 sio.set('log level', 2);
+/*
+sio.set('authorization', function (data, accept) {
+  if(data.headers.cookie) {
+    cookieParser(socket.handshake, {}, function() {
+      console.log(socket.handshake.cookies);                         
+    });
+    console.log(cookie);
+    accept(null, true);
+  } else {
+    accept('No cookie.', false);
+  }
+});
+*/
+
+var bidders = {};
 
 sio.sockets.on('connection', function (socket) {
+    cookieParser(socket.handshake, {}, function() {
+      var subjectID = socket.handshake.cookies.subjectID;
+      socket.set('subjectID', subjectID);
+      console.log(subjectID, 'connected.');
+    });
+    socket.on('disconnect', function () {
+      socket.get('subjectID',function(err, subjectID){
+        console.log(subjectID, 'disconnected.');
+      });
+    });
+  /*
   socket.emit('news', { hello: 'world' });
   socket.on('my other event', function (data) {
     console.log(data);
   });
+ */
 });
