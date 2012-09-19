@@ -20,7 +20,7 @@ app.configure(function(){
   app.use(function(req, res, next) {
     req.settings = auctionHouse.getSettings();
     req.info = {
-      subjectCount: Object.keys(auctionHouse.subjects).length
+      subjectCount: sio.sockets.clients('subjects').length
     };
     next();
   });
@@ -53,7 +53,7 @@ app.get('/', function(req, res) {
     var auctionID = subject.auctionID;
     // If already assigned to an auction, skip the wait page
     if(auctionID && routes.pages[subject.pageIndex] === 'wait') {
-      subject.pageIndex += 1;  
+      subject.pageIndex += 1;
       subject.save();
     }
     auctionHouse.Auction.findOne({'_id': auctionID}, function(err, auction) {
@@ -72,24 +72,45 @@ app.post('/settings', function(req, res) {
   });
 });
 app.post('/login', function(req, res) {
-  if(req.body.id === 'abc') {
-    auctionHouse.newSubject(function(err, subjectID) {
-      // TODO: Error handling
-      res.cookie('subjectID', subjectID, { maxAge: 36000000, httpOnly: true });
-      res.redirect('/');
-    });
-  } else {
-    req.failedLogin = true;
-    routes.login(req, res);
+  if(req.settings.groupsAssigned) {
+    req.failedLogin = 'Groups have already been assigned.';
+    return routes.login(req, res);
   }
+  if(req.body.id !== 'abc') {
+    req.failedLogin = 'Incorrect experiment code.';
+    return routes.login(req, res);
+  }
+  auctionHouse.newSubject(function(err, subjectID) {
+    // TODO: Error handling
+    res.cookie('subjectID', subjectID, { maxAge: 36000000, httpOnly: true });
+    res.redirect('/');
+  });
 });
 app.post('/session', function(req, res) {
   if(req.body.action === 'start') {
     var clients = sio.sockets.clients();
-    var clientCount = clients.length;
-    var settings = auctionHouse.getSettings();
-    var groupSize = settings.groupSize;
-    var groups = helpers.permute(helpers.arrayOfGroups(clientCount, groupSize));
+    var numberOfClients = clients.length;
+    var groupSize = req.settings.groupSize;
+    var groups = helpers.groupsForAuctions(numberOfClients, groupSize);
+    var numberOfAuctions = Math.ceil(numberOfClients/groupSize);
+    for(var auctionNumber = 0; auctionNumber < numberOfAuctions; auctionNumber += 1) {
+      var auction = new auctionHouse.Auction({
+        increment: req.settings.increment,
+        groupSize: req.settings.groupSize        
+      });
+      var group = groups[auctionNumber];
+      auction.save();
+      for(var key in group) {
+        var client = clients[group[key]];
+        client.get('subjectID', function(err, subjectID) {
+          auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {auctionID: auction.id}, function(err) {
+            console.log('Updated:', subjectID, err);
+          });
+        });
+      }
+    }
+    req.settings.groupsAssigned = true;
+    req.settings.save();
   }
   res.redirect('/admin');
 });
@@ -104,7 +125,7 @@ sio.set('log level', 2); // no debug messages
 sio.set('authorization', function (data, accept) {
   if(data.headers.cookie) {
     cookieParser(socket.handshake, {}, function() {
-      console.log(socket.handshake.cookies);                         
+      console.log(socket.handshake.cookies);
     });
     console.log(cookie);
     accept(null, true);
@@ -119,13 +140,16 @@ var bidders = {};
 sio.sockets.on('connection', function (socket) {
     cookieParser(socket.handshake, {}, function() {
       var subjectID = socket.handshake.cookies.subjectID;
-      socket.set('subjectID', subjectID);
-      console.log(subjectID, 'connected.');
+      if(subjectID) {
+        socket.set('subjectID', subjectID);
+        socket.join('subjects');
+      }
     });
     socket.on('disconnect', function () {
+      /*
       socket.get('subjectID',function(err, subjectID){
-        console.log(subjectID, 'disconnected.');
       });
+     */
     });
   /*
   socket.emit('news', { hello: 'world' });

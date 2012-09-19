@@ -6,11 +6,12 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <% if(startTime) { %>
     <p>Experiment started: <%= startTime %></p>
     <p>Subjects: <%= subjectCount %></p>
+    <% if(groupsAssigned) { %>
+    <p>Groups have been assigned.</p>
     <% } else { %>
-    <p>No experiment running.</p>
+    <p>Groups not yet assigned.</p>
     <% } %>
     <form action="/settings" method="POST">
       <table>

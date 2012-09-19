@@ -1,9 +1,9 @@
 <h1><%= title %></h1>
 <form action="/login" method="POST">
   <% if(failedLogin) { %>
-  <div class="error">Invalid login.</div>
+  <div class="error"><%= failedLogin %></div>
   <% } %>
-  <label for="id">ID:</label>
+  <label for="id">Experiment Code:</label>
   <input type="text" name="id" />
   <input type="submit" />
 </form>

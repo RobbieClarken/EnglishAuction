@@ -28,11 +28,12 @@ exports.admin = function(req, res){
   var data = {
     layout: false,
     title: 'English Auction Admin',
-    startTime: null,
+    startTime: settings.startTime,
     subjectCount: req.info.subjectCount,
     groupSize: settings.groupSize,
     increment: settings.increment,
-    showupFee: settings.showupFee
+    showupFee: settings.showupFee,
+    groupsAssigned: settings.groupsAssigned
   };
   res.render('admin', data);
 };
