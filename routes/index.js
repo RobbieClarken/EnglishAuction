@@ -22,8 +22,6 @@ exports.login = function(req, res){
 };
 
 exports.admin = function(req, res){
-  console.log(req.settings);
-  console.log(req.info);
   var settings = req.settings;
   var data = {
     layout: false,

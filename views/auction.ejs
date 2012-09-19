@@ -3,7 +3,7 @@
   <p>
     The current price of the <%= objectName %> is:
   </p>
-  <h1 style="text-align: center;"><%= price %> Rupees</h1>
+  <h1 style="text-align: center;"><span class='price'><%= price %></span> Rupees</h1>
 </div>
 <div id="bid-div">
   <p>
@@ -14,5 +14,9 @@
 </div>
 <div id="wait-div">Please wait for the other participants.</div>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src='/javascripts/subject.js'></script>
+<script>
+  var socket = io.connect('http://localhost/subjects');
+  socket.on('price', function(price) {
+    $('.price').html(price);
+  });
+</script>

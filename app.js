@@ -20,7 +20,7 @@ app.configure(function(){
   app.use(function(req, res, next) {
     req.settings = auctionHouse.getSettings();
     req.info = {
-      subjectCount: sio.sockets.clients('subjects').length
+      subjectCount: subjects.clients().length
     };
     next();
   });
@@ -43,7 +43,6 @@ app.get('/', function(req, res) {
   if(!subjectID) {
     return res.redirect('/login');
   }
-  console.log(subjectID);
   auctionHouse.Subject.findOne({_id: subjectID}, function(err, subject) {
     if(!subject) {
       console.log('Error. Maybe...', err);
@@ -88,7 +87,7 @@ app.post('/login', function(req, res) {
 });
 app.post('/session', function(req, res) {
   if(req.body.action === 'start') {
-    var clients = sio.sockets.clients();
+    var clients = subjects.clients();
     var numberOfClients = clients.length;
     var groupSize = req.settings.groupSize;
     var groups = helpers.groupsForAuctions(numberOfClients, groupSize);
@@ -121,40 +120,22 @@ var server = http.createServer(app).listen(app.get('port'), function(){
 
 var sio = io.listen(server);
 sio.set('log level', 2); // no debug messages
-/*
-sio.set('authorization', function (data, accept) {
-  if(data.headers.cookie) {
-    cookieParser(socket.handshake, {}, function() {
-      console.log(socket.handshake.cookies);
-    });
-    console.log(cookie);
-    accept(null, true);
-  } else {
-    accept('No cookie.', false);
-  }
-});
-*/
 
-var bidders = {};
-
-sio.sockets.on('connection', function (socket) {
-    cookieParser(socket.handshake, {}, function() {
-      var subjectID = socket.handshake.cookies.subjectID;
-      if(subjectID) {
-        socket.set('subjectID', subjectID);
-        socket.join('subjects');
-      }
-    });
-    socket.on('disconnect', function () {
-      /*
-      socket.get('subjectID',function(err, subjectID){
-      });
-     */
-    });
-  /*
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
+var subjects = sio.of('/subjects').on('connection', function (socket) {
+  console.log('Subject joined');
+  cookieParser(socket.handshake, {}, function() {
+    var subjectID = socket.handshake.cookies.subjectID;
+    if(subjectID) {
+      socket.set('subjectID', subjectID);
+    }
+    observers.emit('subject', { subjectCount: subjects.clients().length });
   });
- */
+  socket.on('disconnect', function () {
+    // We need to subtract 1 because the subject because the
+    // subject that is disconnected is still in clients at this stage
+    observers.emit('subject', { subjectCount: subjects.clients().length-1 });
+  });
+});
+
+var observers = sio.of('/observers').on('connection', function(socket) {
 });
