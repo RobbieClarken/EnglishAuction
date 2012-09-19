@@ -6,6 +6,7 @@ exports.index = function(req, res){
     var page = pages[req.subject.pageIndex];
     var price = req.auction ? req.auction.price : null;
     res.render(page.title, {
+      layout: 'subject_screen_layout',
       page: 'auction',
       title: 'Experiment',
       objectName: 'Chocolate Bar',

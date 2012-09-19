@@ -1,12 +1,7 @@
 <p>Please wait for the auction to commence.</p>
 
 <script type='text/javascript'>
-  //TODO: Should not use localhost
-  var socket = io.connect('http://localhost/subjects');
   socket.on('start auction', function() {
-    // TODO: Next page
     document.location = '/';
-  });
-  $(document).ready(function() {
   });
 </script>

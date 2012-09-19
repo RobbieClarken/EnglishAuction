@@ -15,7 +15,6 @@
 <div id="wait-div" <% if(!roundChoice) { %> style="display:none;" <% } %> >Please wait for the other participants.</div>
 
 <script>
-  var socket = io.connect('http://localhost/subjects');
   socket.on('price', function(price) {
     document.location = '/';
   });
