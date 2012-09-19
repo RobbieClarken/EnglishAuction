@@ -1,15 +1,11 @@
-var pages = [
-  'wait',
-  'auction',
-  'over'
-];
+var pages = require('./pages');
 
 exports.pages = pages;
 
 exports.index = function(req, res){
     var page = pages[req.subject.pageIndex];
     var price = req.auction ? req.auction.price : null;
-    res.render(page, {
+    res.render(page.title, {
       page: 'auction',
       title: 'Experiment',
       objectName: 'Chocolate Bar',
@@ -22,7 +18,14 @@ exports.index = function(req, res){
 
 exports.login = function(req, res){
   var failedLogin = req.failedLogin || false;
-  res.render('login', {title: 'Experiment', failedLogin: failedLogin});
+  res.render(
+    'login',
+    {
+      layout: false,
+      title: 'Experiment',
+      failedLogin: failedLogin
+    }
+  );
 };
 
 exports.admin = function(req, res){

@@ -75,7 +75,7 @@ app.get('/', function(req, res) {
     req.subject = subject;
     var auctionID = subject.auctionID;
     // If already assigned to an auction, skip the wait page
-    var page = routes.pages[subject.pageIndex];
+    var page = routes.pages[subject.pageIndex].title;
     if(auctionID && page === 'wait') {
       subject.pageIndex += 1;
       subject.save();

@@ -1,9 +1,18 @@
-<h1><%= title %></h1>
-<form action="/login" method="POST">
-  <% if(failedLogin) { %>
-  <div class="error"><%= failedLogin %></div>
-  <% } %>
-  <label for="id">Experiment Code:</label>
-  <input type="text" name="id" />
-  <input type="submit" />
-</form>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src='/javascripts/jquery.js'></script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <form action="/login" method="POST">
+      <% if(failedLogin) { %>
+      <div class="error"><%= failedLogin %></div>
+      <% } %>
+      <label for="id">Experiment Code:</label>
+      <input type="text" name="id" />
+      <input type="submit" />
+    </form>
+  </body>
+</html>
