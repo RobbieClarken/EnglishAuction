@@ -1,12 +1,37 @@
 var express = require('express')
   , partials = require('express3-partials')
   , routes = require('./routes')
-  , auctionHouse = require('./lib/auctionHouse')
   , http = require('http')
   , path = require('path')
   , io = require('socket.io')
+  , mongoose = require('mongoose')
   , cookieParser = express.cookieParser('fun30fllkslfj24fdsakj')
   , helpers = require('./lib/helpers');
+
+var db = mongoose.connect('mongodb://localhost/test');
+
+// Create objects in mongoose
+require('./lib/settings');
+require('./lib/subject');
+require('./lib/auction');
+
+var Settings = db.model('Settings');
+var Subject = db.model('Subject');
+var Auction = db.model('Auction');
+
+var settings;
+var auctions = {};
+var subjects = {};
+
+Settings.find().sort('-startTime').limit(1).exec(function(err, results){
+  if(!results.length) {
+    settings = new Settings();
+    settings.save();
+  } else {
+    settings = results[0];
+  }
+});
+
 
 var app = express();
 
@@ -18,7 +43,7 @@ app.configure(function(){
   app.set('view engine', 'ejs');
   app.use(express.favicon());
   app.use(function(req, res, next) {
-    req.settings = auctionHouse.getSettings();
+    req.settings = settings;
     req.info = {
       subjectCount: subjects.clients().length
     };
@@ -43,7 +68,7 @@ app.get('/', function(req, res) {
   if(!subjectID) {
     return res.redirect('/login');
   }
-  auctionHouse.Subject.findOne({_id: subjectID}, function(err, subject) {
+  Subject.findOne({_id: subjectID}, function(err, subject) {
     if(!subject) {
       return res.redirect('/login');
     }
@@ -59,7 +84,7 @@ app.get('/', function(req, res) {
       subject.pageIndex += 1;
       subject.save();
     }
-    auctionHouse.Auction.findOne({'_id': auctionID}, function(err, auction) {
+    Auction.findOne({'_id': auctionID}, function(err, auction) {
       req.auction = auction;
       res.cookie('auctionID', auctionID, { maxAge: 36000000, httpOnly: true });
       routes.index(req, res);
@@ -70,7 +95,8 @@ app.get('/login', routes.login);
 app.get('/admin', routes.admin);
 app.post('/settings', function(req, res) {
   var fields = req.body;
-  auctionHouse.setSettings(fields, function(err) {
+  settings = new Settings(fields);
+  settings.save(function(err) {
     // TODO: Error handling
     res.redirect('/admin');
   });
@@ -84,8 +110,10 @@ app.post('/login', function(req, res) {
     req.failedLogin = 'Incorrect experiment code.';
     return routes.login(req, res);
   }
-  auctionHouse.newSubject(function(err, subjectID) {
+  var subject = new Subject();
+  subject.save(function(err) {
     // TODO: Error handling
+    var subjectID = subject.id;
     res.cookie('subjectID', subjectID, { maxAge: 36000000, httpOnly: true });
     res.redirect('/');
   });
@@ -94,7 +122,7 @@ app.post('/login', function(req, res) {
 function joinAuction(client, auctionID) {
   client.join(auctionID);
   client.get('subjectID', function(err, subjectID) {
-    auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {auctionID: auctionID}, function(err) {
+    Subject.findOneAndUpdate({_id: subjectID}, {auctionID: auctionID}, function(err) {
       client.emit('start auction');
     });
   });
@@ -108,7 +136,7 @@ app.post('/session', function(req, res) {
     var groups = helpers.groupsForAuctions(numberOfClients, groupSize);
     var numberOfAuctions = Math.ceil(numberOfClients/groupSize);
     for(var auctionNumber = 0; auctionNumber < numberOfAuctions; auctionNumber += 1) {
-      var auction = new auctionHouse.Auction({
+      var auction = new Auction({
         increment: req.settings.increment,
         groupSize: req.settings.groupSize
       });
@@ -133,7 +161,7 @@ var sio = io.listen(server);
 sio.set('log level', 2); // no debug messages
 
 function updateDropouts(auctionID, callback) {
-  auctionHouse.Subject.update(
+  Subject.update(
     {auctionID: auctionID, roundChoice: 'drop out'},
     {droppedOut: true, roundChoice: null},
     {multi: true},
@@ -142,7 +170,7 @@ function updateDropouts(auctionID, callback) {
 }
 
 function updateStayIns(auctionID, price, callback) {
-  auctionHouse.Subject.update(
+  Subject.update(
     {auctionID: auctionID, roundChoice: 'stay in'},
     {price: price, roundChoice: null},
     {multi: true},
@@ -170,20 +198,19 @@ var subjects = sio.of('/subjects').on('connection', function (socket) {
   });
   socket.on('decision', function(data) {
     socket.get('auctionID', function(err, auctionID) {
-      auctionHouse.Subject.findOneAndUpdate({_id: subjectID}, {roundChoice: data.choice}, function(err) {
-        console.log('Decision saved:', err, auctionID);
-        auctionHouse.Subject.findOne({auctionID: auctionID, roundChoice: null, droppedOut: false}, function(err, result) {
+      Subject.findOneAndUpdate({_id: subjectID}, {roundChoice: data.choice}, function(err) {
+        Subject.findOne({auctionID: auctionID, roundChoice: null, droppedOut: false}, function(err, result) {
           if(!result) {
             // Everyone has decided
-            auctionHouse.Subject.find({auctionID: auctionID, roundChoice: 'stay in', droppedOut: false}, function(err, results) {
+            Subject.find({auctionID: auctionID, roundChoice: 'stay in', droppedOut: false}, function(err, results) {
               if(results.length === 0) {
                 // All bidders dropped out at the same price
-                auctionHouse.Subject.find({auctionID: auctionID, roundChoice: 'drop out', droppedOut: false}, function(err, results) {
+                Subject.find({auctionID: auctionID, roundChoice: 'drop out', droppedOut: false}, function(err, results) {
                   var winnerIndex = Math.floor(Math.random()*results.length);
                   endAuction(auctionID, results[winnerIndex], null);
                 });
               } else if(results.length === 1) {
-                auctionHouse.Auction.findOne({_id: auctionID}, function(err, auction) {
+                Auction.findOne({_id: auctionID}, function(err, auction) {
                   endAuction(auctionID, results[0], auction.price);
                 });
               } else {
@@ -203,10 +230,9 @@ function endAuction(auctionID, winner, price) {
     winner.price = price;
   }
   winner.won = true;
-  console.log(winner);
   winner.save(function(err) {
-    auctionHouse.Subject.find({auctionID: auctionID, droppedOut: false}, function(err, results) {
-      for(subjectIndex in results) {
+    Subject.find({auctionID: auctionID, droppedOut: false}, function(err, results) {
+      for(var subjectIndex in results) {
         var subject = results[subjectIndex];
         subject.pageIndex += 1;
         subject.save();
@@ -217,7 +243,7 @@ function endAuction(auctionID, winner, price) {
 }
 
 function bumpPrice(auctionID) {
-  auctionHouse.Auction.findOne({_id: auctionID}, function(err, auction) {
+  Auction.findOne({_id: auctionID}, function(err, auction) {
     var lastPrice = auction.price;
     auction.price += auction.increment;
     auction.save(function(err) {
