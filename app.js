@@ -61,8 +61,6 @@ app.configure(function(){
 app.configure('development', function(){
   app.use(express.errorHandler());
 });
-
-
 app.get('/', function(req, res) {
   var subjectID = req.cookies.subjectID;
   if(!subjectID) {
@@ -91,6 +89,15 @@ app.get('/', function(req, res) {
     });
   });
 });
+app.post('/', function(req, res) {
+  var subjectID = req.cookies.subjectID;
+  if(!subjectID) {
+    return res.redirect('/login');
+  }
+  Subject.findOneAndUpdate({_id: subjectID}, {$inc: {pageIndex: 1}}, function(err) {
+    res.redirect('/');
+  });
+});
 app.get('/login', routes.login);
 app.get('/admin', routes.admin);
 app.post('/settings', function(req, res) {
@@ -116,6 +123,20 @@ app.post('/login', function(req, res) {
     var subjectID = subject.id;
     res.cookie('subjectID', subjectID, { maxAge: 36000000, httpOnly: true });
     res.redirect('/');
+  });
+});
+app.post('/save', function(req, res) {
+  console.log(req.body);
+  var subjectID = req.cookies.subjectID;
+  Subject.findOneAndUpdate({_id: subjectID}, req.body, function(err) {
+    if(parseInt(req.body.tableCount) > 4) {
+      console.log('Incrementing page...');
+      Subject.findOneAndUpdate({_id: subjectID}, {$inc: {pageIndex: 1}}, function(err) {
+        return res.end('success');
+      });
+    } else {
+      return res.end('success');
+    }
   });
 });
 

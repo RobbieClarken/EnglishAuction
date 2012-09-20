@@ -4,10 +4,24 @@
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <script src='/javascripts/jquery.js'></script>
+    <script src='/javascripts/seedrandom.js'></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src='/javascripts/subject.js'></script>
   </head>
   <body>
-    <%- body %>
+    <div class="header">
+      <span class="left">ID: <%= subjectID %> (<a href=/logout>logout</a>)</span>
+      <span class="right">Screen <%= screenNumber %></span>
+      <h1 class="center"><%= title %></h1>
+    </div>
+    <div class="content">
+      <%- body %>
+    </div>
+    <div class="footer">
+      <form action="" method="POST">
+        <button class="left" type="submit" name="direction" value="previous" <% if(!previous) { %> disabled <% } %> >Previous</button>
+        <button class="right" type="submit" name="direction" value="next" <% if(!next) { %> disabled <% } %>>Next</button>
+      </form>
+    </div>
   </body>
 </html>

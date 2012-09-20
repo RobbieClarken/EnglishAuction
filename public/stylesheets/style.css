@@ -1,12 +1,61 @@
 body {
   padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 18px "Lucida Grande", Helvetica, Arial, sans-serif;
+  width: 960px;
+  margin: 0 auto;
 }
 
 a {
   color: #00B7FF;
 }
 
+/* Common styles */
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.center {
+  text-align: center;
+  margin: 0 auto;
+}
+
 .error {
   color: red;
+}
+
+/* Header */
+
+.header {
+  width: 100%;
+}
+
+.header h1 {
+  width: 50%;
+}
+
+.header span {
+  font-size: 100%;
+  padding-top: 15px; /* Hack to force spans to bottom */ 
+}
+
+/* Content */
+
+.content {
+  height: 500px;
+  width: 100%;
+  padding: 20px 20px 40px 20px;
+  border: solid 1px black;
+  display:table;
+}
+
+/* Footer */
+
+.footer button {
+  width: 25%;
+  font-size: 150%;
 }

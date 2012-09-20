@@ -4,6 +4,8 @@ exports.pages = pages;
 
 exports.index = function(req, res){
     var page = pages[req.subject.pageIndex];
+    var previous = page.previous || false;
+    var next = page.next || false;
     var price = req.auction ? req.auction.price : null;
     res.render(page.title, {
       layout: 'subject_screen_layout',
@@ -13,7 +15,16 @@ exports.index = function(req, res){
       price: price,
       subjectPrice: req.subject.price,
       roundChoice: req.subject.roundChoice,
-      won: req.subject.won
+      won: req.subject.won,
+      showupFee: req.settings.showupFee,
+      screenNumber: req.subject.pageIndex+1,
+      subjectID: req.subject.id,
+      previous: previous,
+      next: next,
+      paymentPerTable: 50,
+      tableCount: req.subject.tableCount,
+      tablesCorrect: req.subject.tablesCorrect,
+      tryNumber: req.subject.tryNumber
     });
 };
 

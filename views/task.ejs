@@ -1,0 +1,98 @@
+<p>In the following table, please enter the number of zeros in each row in the last column and click OK. You will earn Rs <%= paymentPerTable %> for each table in which you answer correctly for all rows. You may have 3 tries per table.</p>
+<p>Table <span class="tableCount"><%= tableCount %></span> of 4</p>
+<table align="center" border="1" cellpadding="1" cellspacing="1" id="taskTable" style="width: 500px;">
+	<tbody>
+		<tr>
+			<td style="text-align: center;"></td>
+		</tr>
+	</tbody>
+</table>
+<p style="text-align: center;"><input id="checkAnswer" type="button" value="OK" /></p>
+
+<script type="text/javascript">
+  var vars = {
+    tableCount: <%= tableCount %>,
+    tablesCorrect: <%= tablesCorrect %>,
+    tryNumber: <%= tryNumber %>
+  }
+
+  function saveSubjectData(data, callback) {
+    $.ajax({
+      url: '/save',
+      type: 'POST',
+      data: data,
+      success: callback
+    });
+  }
+
+  function generateLine(seed) {
+      var line = "";
+      for(var i = 0; i < 15; i++) {
+          Math.seedrandom(1000*seed+i);
+          line += ""+Math.floor(2*Math.random());
+      }
+      return line;
+  }
+
+  function nextTable() {
+      vars.tableCount += 1;
+      saveSubjectData(vars, function(){
+        document.location = '/';
+      });
+  }
+  $(document).ready(function() {
+    if(!vars.tableCount) {
+        vars.tableCount = 1;
+        $('.tableCount').html(vars.tableCount);
+    }
+
+    if(!vars.tablesCorrect || typeof vars.tablesCorrect == 'undefined') {
+        vars.tablesCorrect = 0;
+    }
+
+    if(!vars.tryNumber) {
+        vars.tryNumber = 1;
+    }
+
+    $('#taskTable').html('');
+
+    var correctAnswers = new Array();
+    for(var rowNum = 0; rowNum < 10; rowNum++) {
+        var seed = 100*vars.tableCount+rowNum;
+        var line = generateLine(seed);
+        var zeroLocs = line.match(/0/g);
+        var numberOfZeros = zeroLocs.length;
+        correctAnswers.push(numberOfZeros);
+        var row = '<tr id="row_'+rowNum+'"><td style="text-align: center;">'+line+'</td><td><input type="text" id="ans_'+rowNum+'" /></td></tr>';
+        $('#taskTable').append(row);
+    }
+
+    $('#checkAnswer').click(function() {
+        var allCorrect = true;
+        for(var rowNum = 0; rowNum < 10; rowNum++) {
+            var answer = parseInt($('#ans_'+rowNum).val());
+            if(answer == correctAnswers[rowNum]) {
+                $('#row_'+rowNum).css("color","green");
+            } else {
+                allCorrect = false;
+                $('#row_'+rowNum).css("color","red");
+            }
+        }
+        if(allCorrect) {
+            vars.tryNumber = 1;
+            vars.tablesCorrect++;
+            alert('Well done!');
+            nextTable();
+        } else {
+           if(vars.tryNumber < 3) {
+               alert('Try again! ('+(3-vars.tryNumber)+' attempts remaining)');
+               vars.tryNumber++;
+               saveSubjectData({tryNumber: vars.tryNumber});
+           } else {
+               vars.tryNumber = 1;
+               nextTable();
+           }
+        }
+    });
+  });
+</script>
