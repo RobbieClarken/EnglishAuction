@@ -63,7 +63,7 @@
         var zeroLocs = line.match(/0/g);
         var numberOfZeros = zeroLocs.length;
         correctAnswers.push(numberOfZeros);
-        var row = '<tr id="row_'+rowNum+'"><td style="text-align: center;">'+line+'</td><td><input type="text" id="ans_'+rowNum+'" /></td></tr>';
+        var row = '<tr id="row_'+rowNum+'"><td style="text-align: center;">'+line+'</td><td><input type="text" id="ans_'+rowNum+'" value="'+numberOfZeros+'" /></td></tr>';
         $('#taskTable').append(row);
     }
 

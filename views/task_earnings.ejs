@@ -1,0 +1,18 @@
+<p>You have earned Rupees <%= totalEarnings %> by successfully completing the earnings task. This amount will be transferred to you by the experimenter.</p>
+<p>Please remain patient and do not communicate with other participants in the session.</p>
+<p>For experimental staff:</p>
+<p>Please provide subject with Rs <%= totalEarnings %>  and enter code to continue.</p>
+<p>Code: <input id="continueCode" type="password" /></p>
+<p><input id="continue" type="button" value="OK" /></p>
+
+<script>
+  $(document).ready(function() {
+    $('#continue').click(function() {
+        if($('#continueCode').val() == '1234') {
+            enableButton('next');
+        } else {
+            alert('Incorrect code.');
+        }
+    });
+  });
+</script>

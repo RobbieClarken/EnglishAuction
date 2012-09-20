@@ -7,6 +7,18 @@
     "title": "task"
   },
   {
+    "title": "task_earnings"
+  },
+  {
+    "title": "auction_explanation",
+    "next": true
+  },
+  {
+    "title": "auction_explanation_2",
+    "previous": true,
+    "next": true
+  },
+  {
     "title": "wait"
   },
   {

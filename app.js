@@ -94,7 +94,13 @@ app.post('/', function(req, res) {
   if(!subjectID) {
     return res.redirect('/login');
   }
-  Subject.findOneAndUpdate({_id: subjectID}, {$inc: {pageIndex: 1}}, function(err) {
+  var inc = 0;
+  if(req.body.direction === 'next') {
+    inc = 1;
+  } else if (req.body.direction === 'previous') {
+    inc = -1;
+  }
+  Subject.findOneAndUpdate({_id: subjectID}, {$inc: {pageIndex: inc}}, function(err) {
     res.redirect('/');
   });
 });
@@ -117,7 +123,10 @@ app.post('/login', function(req, res) {
     req.failedLogin = 'Incorrect experiment code.';
     return routes.login(req, res);
   }
-  var subject = new Subject();
+  var subject = new Subject({
+    showupFee: settings.showupFee,                         
+    paymentPerTable: settings.paymentPerTable                         
+  });
   subject.save(function(err) {
     // TODO: Error handling
     var subjectID = subject.id;

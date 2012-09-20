@@ -21,10 +21,13 @@ exports.index = function(req, res){
       subjectID: req.subject.id,
       previous: previous,
       next: next,
-      paymentPerTable: 50,
+      paymentPerTable: req.settings.paymentPerTable,
       tableCount: req.subject.tableCount,
       tablesCorrect: req.subject.tablesCorrect,
-      tryNumber: req.subject.tryNumber
+      tryNumber: req.subject.tryNumber,
+      totalEarnings: req.subject.totalEarnings,
+      earningsTaskEarnings: req.subject.earningsTaskEarnings,
+      increment: req.settings.increment
     });
 };
 
