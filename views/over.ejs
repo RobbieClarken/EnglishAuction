@@ -1,5 +1,9 @@
 <% if(won) { %>
-<h1>You won the auction for <%= subjectPrice %>.</h1>
+	<p>You won the auction and will receive the <%= objectName %> for Rs <%= subjectPrice %>.</p>
+	<p>Your will receive the chocolate bar and your money earnings today are: Rupees <%= netEarnings %></p>
 <% } else { %>
-<h1>You did not win the auction.</h1>
+  <p>You did not win the auction.</p>
+	<p>Your total earnings today are: Rupees <%= totalEarnings %></p>
 <% } %>
+<p>Thank you for participating in today&rsquo;s experiment.</p>
+<p>Please fill up the following survey questionnaires, which will help inform our research</p>

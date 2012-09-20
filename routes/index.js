@@ -27,7 +27,8 @@ exports.index = function(req, res){
       tryNumber: req.subject.tryNumber,
       totalEarnings: req.subject.totalEarnings,
       earningsTaskEarnings: req.subject.earningsTaskEarnings,
-      increment: req.settings.increment
+      increment: req.settings.increment,
+      netEarnings: req.subject.netEarnings
     });
 };
 

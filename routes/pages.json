@@ -19,12 +19,29 @@
     "next": true
   },
   {
+    "title": "example_auction",
+    "previous": true,
+    "next": true
+  },
+  {
     "title": "wait"
   },
   {
     "title": "auction"
   },
   {
-    "title": "over"
+    "title": "over",
+    "next": true
+  }
+  {
+    "title": "questionnaire_1",
+    "next": true
+  },
+  {
+    "title": "questionnaire_2",
+    "next": true
+  },
+  {
+    "title": "thankyou"
   }
 ]
