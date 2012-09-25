@@ -38,7 +38,7 @@ var app = express();
 app.use(partials());
 
 app.configure(function(){
-  app.set('port', process.env.PORT || 3000);
+  app.set('port', process.env.PORT || 4000);
   app.set('views', __dirname + '/views');
   app.set('view engine', 'ejs');
   app.use(express.favicon());
@@ -104,6 +104,11 @@ app.post('/', function(req, res) {
     res.redirect('/');
   });
 });
+app.get('/logout', function(req, res) {
+  res.clearCookie('subjectID');
+  res.clearCookie('auctionID');
+  res.redirect('/login');
+});
 app.get('/login', routes.login);
 app.get('/admin', routes.admin);
 app.post('/settings', function(req, res) {
@@ -135,11 +140,9 @@ app.post('/login', function(req, res) {
   });
 });
 app.post('/save', function(req, res) {
-  console.log(req.body);
   var subjectID = req.cookies.subjectID;
   Subject.findOneAndUpdate({_id: subjectID}, req.body, function(err) {
     if(parseInt(req.body.tableCount) > 4) {
-      console.log('Incrementing page...');
       Subject.findOneAndUpdate({_id: subjectID}, {$inc: {pageIndex: 1}}, function(err) {
         return res.end('success');
       });

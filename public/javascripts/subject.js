@@ -1,4 +1,4 @@
-var socket = io.connect('http://localhost/subjects');
+var socket = io.connect('/subjects');
 
 function enableButton(name) {
   $('#'+name).removeAttr('disabled');

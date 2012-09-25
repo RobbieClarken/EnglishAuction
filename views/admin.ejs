@@ -7,13 +7,18 @@
   </head>
   <body>
     <h1><%= title %></h1>
-    <p>Experiment started: <%= startTime %></p>
+    <p>Session created: <%= startTime %></p>
     <p>Subjects: <span class='subjectCount'><%= subjectCount %></span></p>
     <% if(groupsAssigned) { %>
     <p>Groups have been assigned.</p>
     <% } else { %>
     <p>Groups not yet assigned.</p>
     <% } %>
+    <form action="/session" method="POST">
+      <input type="hidden" name="action" value="start" />
+      <input type="submit" value="Assign Groups" />
+    </form>
+    <br />
     <form action="/settings" method="POST">
       <table>
         <tr>
@@ -26,15 +31,11 @@
           <td>Showup Fee</td><td><input type="input" name="showupFee" value="<%= showupFee %>" /></td>
         </tr>
       </table>
-      <input type="submit" value="Save" />
-    </form>
-    <form action="/session" method="POST">
-      <input type="hidden" name="action" value="start" />
-      <input type="submit" value="Assign Groups" />
+      <input type="submit" value="Save and create new session" />
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://localhost/observers');
+      var socket = io.connect('/observers');
       socket.on('subject', function(data) {
         $('.subjectCount').html(data.subjectCount);
       });
