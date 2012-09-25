@@ -28,6 +28,18 @@ a {
   color: red;
 }
 
+.emphasis {
+  font-weight: bold;
+}
+
+input {
+  font-size: 100%;
+}
+
+input[type=submit], input[type=button] {
+  -webkit-appearance: button;
+}
+
 /* Header */
 
 .header {
