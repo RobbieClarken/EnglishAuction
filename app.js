@@ -222,7 +222,7 @@ function updateStayIns(auctionID, price, callback) {
   );
 }
 
-var subjects = sio.of('/subjects').on('connection', function (socket) {
+var subjects = sio.of('/sio/subjects').on('connection', function (socket) {
   var subjectID
     , auctionID;
   cookieParser(socket.handshake, {}, function() {
@@ -302,5 +302,5 @@ function bumpPrice(auctionID) {
   });
 }
 
-var observers = sio.of('/observers').on('connection', function(socket) {
+var observers = sio.of('/sio/observers').on('connection', function(socket) {
 });

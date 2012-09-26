@@ -35,7 +35,7 @@
     </form>
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      var socket = io.connect('/observers');
+      var socket = io.connect('/sio/observers');
       socket.on('subject', function(data) {
         $('.subjectCount').html(data.subjectCount);
       });
