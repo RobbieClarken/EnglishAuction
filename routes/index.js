@@ -31,7 +31,7 @@ exports.index = function(req, res){
       won: req.subject.won,
       showupFee: req.settings.showupFee,
       screenNumber: req.subject.pageIndex+1,
-      subjectID: req.subject.id,
+      subjectID: req.subject.publicId,
       previous: previous,
       next: next,
       paymentPerTable: req.settings.paymentPerTable,
@@ -71,3 +71,7 @@ exports.admin = function(req, res){
   };
   res.render('admin', data);
 };
+
+exports.results = function(req, res) {
+  res.render('results', {layout: 'observer_layout', results: req.results});
+}

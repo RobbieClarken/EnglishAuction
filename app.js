@@ -207,7 +207,8 @@ app.get('/results/:settingsID?', function(req, res) {
     query = {};
   }
   Subject.find(query, fields, function(err, results) {
-    res.end(JSON.stringify(results));
+    req.results = results;
+    routes.results(req, res);
   });
 });
 

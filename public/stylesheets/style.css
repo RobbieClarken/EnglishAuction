@@ -81,3 +81,7 @@ input[type=submit], input[type=button] {
 .questions {
   font-size: 95%;
 }
+
+.results {
+  font-size: 50%;
+}
