@@ -129,6 +129,7 @@ app.post('/login', function(req, res) {
     return routes.login(req, res);
   }
   var subject = new Subject({
+    settings: settings,
     showupFee: settings.showupFee,                         
     paymentPerTable: settings.paymentPerTable                         
   });
@@ -194,6 +195,19 @@ app.post('/questionnaire', function(req, res) {
     subject.save(function() {
       res.redirect('/');
     });
+  });
+});
+
+app.get('/results/:settingsID?', function(req, res) {
+  var query
+    , fields = 'startTime pageIndex auctionID tablesCorrect price droppedOut won questionnaire totalEarnings netEarnings questionnaire paymentPerTable showupFee';
+  if(req.params.settingsID) {
+    query = {'settings': req.params.settingsID};
+  } else {
+    query = {};
+  }
+  Subject.find(query, fields, function(err, results) {
+    res.end(JSON.stringify(results));
   });
 });
 
