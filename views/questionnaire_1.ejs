@@ -1,26 +1,43 @@
-<p>
-	&nbsp;</p>
-<p>
-	1. Your age in years:</p>
-<p style="margin-left: 520px; ">
-	<input name="age" type="text" /></p>
-<p>
-	2. Gender:</p>
-<p style="margin-left: 520px; ">
-	<input name="q1" type="radio" value="true" />Male<input name="q1" type="radio" value="false" />&nbsp;Female</p>
-<p>
-	&nbsp;</p>
-<p>
-	3. Faculty:</p>
-<p style="margin-left: 520px; ">
-	<input name="age" type="text" /></p>
-<div>
-	<p>
-		4. Comments:</p>
-	<p style="margin-left: 520px; ">
-		<textarea cols="50" name="comments" rows="10"></textarea></p>
-	<div>
-		&nbsp;</div>
-</div>
-<p>
-	&nbsp;</p>
+<form action="/questionnaire" method="POST">
+  <table class="questions">
+    <col width="300">
+    <col width="650">
+    <tr>
+      <td>1. Your age in years:</td>
+      <td><input name="age" type="text" /></td>
+    </tr>
+    <tr>
+      <td>2. Gender:</td>
+      <td><input name="gender" type="radio" value="true" />Male<input name="gender" type="radio" value="false" /> Female</td>
+    </tr>
+    <tr>
+      <td>3. Faculty:</td>
+      <td><input name="faculty" type="text" /></td>
+    </tr>
+    <tr>
+      <td>4. Comments:</td>
+      <td>
+        <textarea cols="50" name="comments" rows="10"></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td>5. The instructions for the experiment were clear:</td>
+      <td><input name="clear_instructions" type="radio" value="-2" />Strongly disagree<input name="clear_instructions" type="radio" value="-1" /> Disagree<input name="clear_instructions" type="radio" value="0" />More or less<input name="clear_instructions" type="radio" value="1" /> Agree<input name="clear_instructions" type="radio" value="2" /> Strongly Agree</td>
+    </tr>
+    <tr>
+      <td>6. There was enough time to make decisions:</td>
+      <td><input name="enough_time" type="radio" value="-2" />Strongly disagree<input name="enough_time" type="radio" value="-1" /> Disagree<input name="enough_time" type="radio" value="0" />More or less<input name="enough_time" type="radio" value="1" /> Agree<input name="enough_time" type="radio" value="2" /> Strongly Agree</td>
+    </tr>
+    <tr>
+      <td>7. The experimental staff was prompt and encouraged questions/clarifications:</td>
+      <td><input name="helpful_staff" type="radio" value="-2" />Strongly disagree<input name="helpful_staff" type="radio" value="-1" /> Disagree<input name="helpful_staff" type="radio" value="0" />More or less<input name="helpful_staff" type="radio" value="1" /> Agree<input name="helpful_staff" type="radio" value="2" /> Strongly Agree</td>
+    </tr>
+    <tr>
+      <td>8. The task in today's experiment is similar to something that you see in everyday life:</td>
+      <td><input name="everyday_task" type="radio" value="-2" />Strongly disagree<input name="everyday_task" type="radio" value="-1" /> Disagree<input name="everyday_task" type="radio" value="0" />More or less<input name="everyday_task" type="radio" value="1" /> Agree<input name="everyday_task" type="radio" value="2" /> Strongly Agree</td>
+    </tr>
+  </table>
+  <div class="expand center">
+    <input class="center" type="submit" value="Save" />
+  </div>
+</form>

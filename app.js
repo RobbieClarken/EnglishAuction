@@ -186,6 +186,17 @@ app.post('/session', function(req, res) {
   res.redirect('/admin');
 });
 
+app.post('/questionnaire', function(req, res) {
+  var subjectID = req.cookies.subjectID;
+  Subject.findOne({_id: subjectID}, function(err, subject) {
+    subject.questionnaire = req.body;
+    subject.pageIndex += 1;
+    subject.save(function() {
+      res.redirect('/');
+    });
+  });
+});
+
 var server = http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });

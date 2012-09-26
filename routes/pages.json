@@ -24,6 +24,11 @@
     "next": true
   },
   {
+    "title": "auction_instructions",
+    "previous": true,
+    "next": true
+  },
+  {
     "title": "wait"
   },
   {
@@ -35,10 +40,6 @@
   },
   {
     "title": "questionnaire_1",
-    "next": true
-  },
-  {
-    "title": "questionnaire_2",
     "next": true
   },
   {

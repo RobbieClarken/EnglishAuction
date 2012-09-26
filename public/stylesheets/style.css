@@ -40,6 +40,10 @@ input[type=submit], input[type=button] {
   -webkit-appearance: button;
 }
 
+.expand {
+  width: 100%;
+}
+
 /* Header */
 
 .header {
@@ -70,4 +74,10 @@ input[type=submit], input[type=button] {
 .footer button {
   width: 25%;
   font-size: 150%;
+}
+
+/* Experiment specific */
+
+.questions {
+  font-size: 95%;
 }

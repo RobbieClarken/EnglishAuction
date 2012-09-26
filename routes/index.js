@@ -6,6 +6,19 @@ exports.index = function(req, res){
     var page = pages[req.subject.pageIndex];
     var previous = page.previous || false;
     var next = page.next || false;
+
+    if(req.settings.debug) {
+      previous = true;
+      next = true;
+    }
+    if(req.subject.pageIndex === 0) {
+      console.log(previous);
+      previous = false;
+    }
+    if(req.subject.pageIndex === pages.length-1){
+      next = false;
+    }
+
     var price = req.auction ? req.auction.price : null;
     res.render(page.title, {
       layout: 'subject_screen_layout',
