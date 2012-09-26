@@ -200,7 +200,7 @@ app.post('/questionnaire', function(req, res) {
 
 app.get('/results/:settingsID?', function(req, res) {
   var query
-    , fields = 'startTime pageIndex auctionID tablesCorrect price droppedOut won questionnaire totalEarnings netEarnings questionnaire paymentPerTable showupFee';
+    , fields = 'startTime pageIndex auctionID tablesCorrect price droppedOut won questionnaire totalEarnings netEarnings questionnaire paymentPerTable showupFee roundChoice';
   if(req.params.settingsID) {
     query = {'settings': req.params.settingsID};
   } else {
